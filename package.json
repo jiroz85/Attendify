@@ -23,7 +23,7 @@
     "morgan": "^1.10.0",
     "mysql2": "^3.11.0",
     "node-fetch": "^2.7.0",
-    "pg": "^8.16.3"
+    "pg": "^8.20.0"
   },
   "devDependencies": {
     "eslint": "^9.0.0",

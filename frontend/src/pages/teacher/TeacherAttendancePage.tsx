@@ -62,14 +62,18 @@ export function TeacherAttendancePage() {
 
   // Load existing attendance when class and date are selected
   useEffect(() => {
-    if (!selectedClass || !attendanceDate) return;
+    const sc = selectedClass;
+    if (!sc || !attendanceDate) return;
+
+    const classId = sc.class_id;
+    const courseId = sc.course_id;
 
     let cancelled = false;
     async function run() {
       try {
         const attendance = await getClassAttendance(
-          selectedClass.class_id,
-          selectedClass.course_id,
+          classId,
+          courseId,
           attendanceDate,
         );
         if (!cancelled) {

@@ -18,21 +18,26 @@ export function TeacherAttendanceHistoryPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const [selectedClass, setSelectedClass] = useState<TeacherClassData | null>(null);
+  const [selectedClass, setSelectedClass] = useState<TeacherClassData | null>(
+    null,
+  );
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [attendanceData, setAttendanceData] = useState<any[]>([]);
   const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
+
     async function run() {
       setLoading(true);
       setError(null);
+
       try {
         const [data, students] = await Promise.all([
           getTeacherClassData(),
           listTeacherStudents(),
         ]);
+
         if (!cancelled) {
           setClassData(data);
           setStudents(students);
@@ -43,7 +48,9 @@ export function TeacherAttendanceHistoryPage() {
         if (!cancelled) setLoading(false);
       }
     }
+
     run();
+
     return () => {
       cancelled = true;
     };
@@ -51,26 +58,34 @@ export function TeacherAttendanceHistoryPage() {
 
   // Load attendance when class and date are selected
   useEffect(() => {
-    if (!selectedClass || !selectedDate) return;
+    const sc = selectedClass;
+    if (!sc?.class_id || !sc?.course_id || !selectedDate) return;
+
+    const classId = sc.class_id;
+    const courseId = sc.course_id;
 
     let cancelled = false;
+
     async function run() {
       try {
         const attendance = await getClassAttendance(
-          selectedClass.class_id,
-          selectedClass.course_id,
+          classId,
+          courseId,
           selectedDate,
         );
+
         if (!cancelled) {
           setAttendanceData(attendance);
         }
-      } catch (err) {
+      } catch {
         if (!cancelled) {
           setAttendanceData([]);
         }
       }
     }
+
     run();
+
     return () => {
       cancelled = true;
     };
@@ -84,12 +99,14 @@ export function TeacherAttendanceHistoryPage() {
   function updateAttendance(studentId: number, statusCode: string) {
     setAttendanceData((prev) => {
       const existing = prev.find((a) => a.student_id === studentId);
+
       if (existing) {
         return prev.map((a) =>
-          a.student_id === studentId ? { ...a, status_code: statusCode } : a
+          a.student_id === studentId ? { ...a, status_code: statusCode } : a,
         );
       } else {
         const student = filteredStudents.find((s) => s.id === studentId);
+
         if (student) {
           return [
             ...prev,
@@ -103,12 +120,17 @@ export function TeacherAttendanceHistoryPage() {
           ];
         }
       }
+
       return prev;
     });
   }
 
   async function saveAttendance() {
-    if (!selectedClass || !selectedDate) {
+    if (
+      !selectedClass?.class_id ||
+      !selectedClass?.course_id ||
+      !selectedDate
+    ) {
       setError("Please select class and date");
       return;
     }
@@ -120,6 +142,7 @@ export function TeacherAttendanceHistoryPage() {
     try {
       const attendancePayload = filteredStudents.map((student) => {
         const record = attendanceData.find((a) => a.student_id === student.id);
+
         return {
           studentId: student.id,
           statusCode: record?.status_code || "PRESENT",
@@ -134,6 +157,7 @@ export function TeacherAttendanceHistoryPage() {
       });
 
       setSuccess(`Updated attendance for ${attendancePayload.length} students`);
+
       setEditMode(false);
     } catch {
       setError("Failed to update attendance");
@@ -152,6 +176,7 @@ export function TeacherAttendanceHistoryPage() {
       <h2 className="m-0 text-xl font-semibold text-[var(--text-h)]">
         Attendance History
       </h2>
+
       {error ? <Toast type="error" message={error} /> : null}
       {success ? <Toast type="success" message={success} /> : null}
 
@@ -164,11 +189,14 @@ export function TeacherAttendanceHistoryPage() {
               <span className="text-sm font-medium text-[var(--text-h)]">
                 Class
               </span>
+
               <select
                 value={selectedClass ? String(selectedClass.class_id) : ""}
                 onChange={(e) => {
                   const classId = Number(e.target.value);
-                  const selected = classData.find((c) => c.class_id === classId);
+                  const selected = classData.find(
+                    (c) => c.class_id === classId,
+                  );
                   setSelectedClass(selected || null);
                 }}
                 className="h-10 w-full rounded-xl border border-[var(--border)] bg-transparent px-3 text-[var(--text-h)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-border)]"
@@ -187,6 +215,7 @@ export function TeacherAttendanceHistoryPage() {
               <span className="text-sm font-medium text-[var(--text-h)]">
                 Date
               </span>
+
               <input
                 type="date"
                 value={selectedDate}
@@ -199,6 +228,7 @@ export function TeacherAttendanceHistoryPage() {
               <span className="text-sm font-medium text-[var(--text-h)]">
                 Actions
               </span>
+
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -208,6 +238,7 @@ export function TeacherAttendanceHistoryPage() {
                 >
                   {editMode ? "Cancel" : "Edit"}
                 </button>
+
                 {editMode && (
                   <button
                     type="button"
@@ -229,80 +260,44 @@ export function TeacherAttendanceHistoryPage() {
           title={`Attendance - ${selectedDate} (${filteredStudents.length} students)`}
         >
           {filteredStudents.length === 0 ? (
-            <div className="text-sm opacity-80">No students found for this class.</div>
+            <div className="text-sm opacity-80">
+              No students found for this class.
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full border-separate border-spacing-0 text-sm">
                 <thead>
-                  <tr className="text-left text-[var(--text-h)]">
-                    <th className="whitespace-nowrap border-b border-[var(--border)] px-3 py-2 font-semibold">
-                      Student
-                    </th>
-                    <th className="whitespace-nowrap border-b border-[var(--border)] px-3 py-2 font-semibold">
-                      Status
-                    </th>
-                    <th className="whitespace-nowrap border-b border-[var(--border)] px-3 py-2 font-semibold">
-                      Actions
-                    </th>
+                  <tr>
+                    <th className="px-3 py-2">Student</th>
+                    <th className="px-3 py-2">Status</th>
+                    <th className="px-3 py-2">Actions</th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {filteredStudents.map((student) => {
                     const status = getStudentStatus(student.id);
+
                     return (
                       <tr key={student.id}>
-                        <td className="border-b border-[var(--border)] px-3 py-2">
-                          <div className="font-semibold text-[var(--text-h)]">
-                            {`${student.firstName ?? ""} ${student.lastName ?? ""}`.trim() ||
-                              student.email}
-                          </div>
-                          <div className="text-xs opacity-80">
-                            #{student.id}{" "}
-                            {student.studentNumber ? `• ${student.studentNumber}` : ""}
-                          </div>
+                        <td className="px-3 py-2">
+                          {student.firstName} {student.lastName}
                         </td>
-                        <td className="border-b border-[var(--border)] px-3 py-2">
-                          <span
-                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              status === "PRESENT"
-                                ? "bg-green-100 text-green-800"
-                                : status === "ABSENT"
-                                ? "bg-red-100 text-red-800"
-                                : status === "LATE"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-blue-100 text-blue-800"
-                            }`}
+
+                        <td className="px-3 py-2">{status}</td>
+
+                        <td className="px-3 py-2">
+                          <select
+                            value={status}
+                            onChange={(e) =>
+                              updateAttendance(student.id, e.target.value)
+                            }
                           >
-                            {status}
-                          </span>
-                        </td>
-                        <td className="border-b border-[var(--border)] px-3 py-2">
-                          {editMode ? (
-                            <select
-                              value={status}
-                              onChange={(e) =>
-                                updateAttendance(student.id, e.target.value)
-                              }
-                              disabled={saving}
-                              className="h-8 w-full min-w-32 rounded-lg border border-[var(--border)] bg-transparent px-2 text-xs text-[var(--text-h)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-border)]"
-                            >
-                              <option value="PRESENT">Present</option>
-                              <option value="ABSENT">Absent</option>
-                              <option value="LATE">Late</option>
-                              <option value="EXCUSED">Excused</option>
-                            </select>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                // Navigate to student attendance history
-                                window.location.href = `/teacher/students/${student.id}/attendance`;
-                              }}
-                              className="text-xs text-blue-600 hover:text-blue-800 underline"
-                            >
-                              View History
-                            </button>
-                          )}
+                            <option value="PRESENT">Present</option>
+                            <option value="ABSENT">Absent</option>
+                            <option value="LATE">Late</option>
+                            <option value="EXCUSED">Excused</option>
+                          </select>
                         </td>
                       </tr>
                     );

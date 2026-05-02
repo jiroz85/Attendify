@@ -1,19 +1,13 @@
 import { useEffect, useState } from "react";
 import { Card } from "../../components/Card";
 import { Toast } from "../../components/Toast";
-import type { TeacherClassData } from "../../services/attendance";
 import {
-  getTeacherClassData,
   getTeacherClassReports,
   getTeacherStudentReports,
 } from "../../services/attendance";
 import type { ClassReport, StudentReport } from "../../services/attendance";
-import type { TeacherStudent } from "../../services/teacher";
-import { listTeacherStudents } from "../../services/teacher";
 
 export function TeacherAttendanceReportsPage() {
-  const [classData, setClassData] = useState<TeacherClassData[]>([]);
-  const [students, setStudents] = useState<TeacherStudent[]>([]);
   const [classReports, setClassReports] = useState<ClassReport[]>([]);
   const [studentReports, setStudentReports] = useState<StudentReport[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,14 +26,7 @@ export function TeacherAttendanceReportsPage() {
       setLoading(true);
       setError(null);
       try {
-        const [data, studentsData] = await Promise.all([
-          getTeacherClassData(),
-          listTeacherStudents(),
-        ]);
-        if (!cancelled) {
-          setClassData(data);
-          setStudents(studentsData);
-        }
+        // No-op: this page doesn't currently need classData/students on mount.
       } catch {
         if (!cancelled) setError("Failed to load data");
       } finally {
