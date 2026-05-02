@@ -6,7 +6,10 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "node --watch src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -20,5 +23,9 @@
     "morgan": "^1.10.0",
     "mysql2": "^3.11.0",
     "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0"
   }
 }
