@@ -241,7 +241,7 @@ async function getTeacherClassReports(
      LEFT JOIN student_profiles sp ON sp.class_id = tcca.class_id
      LEFT JOIN attendance a ON a.class_id = tcca.class_id AND a.course_id = tcca.course_id AND a.student_id = sp.user_id
      ${whereClause}
-     GROUP BY c.id, tcca.course_id
+     GROUP BY c.id, d.name, ay.name, s.name, tcca.course_id, co.code, co.title
      ORDER BY d.name, ay.name, s.name, co.code`,
     params,
   );
