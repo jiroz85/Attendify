@@ -9,6 +9,7 @@ async function listTeacherClasses(teacherId) {
       c.section_id,
       d.name AS department_name,
       ay.name AS academic_year_name,
+      ay.sort_order,
       s.name AS section_name
     FROM teacher_course_class_assignments a
     JOIN classes c ON c.id = a.class_id
@@ -51,7 +52,7 @@ async function getTeacherTodayAttendanceCount(teacherId) {
     FROM attendance
     JOIN teacher_course_class_assignments a ON attendance.class_id = a.class_id
     WHERE a.teacher_id = ?
-      AND attendance.attendance_date = CURDATE()
+      AND attendance.attendance_date = CURRENT_DATE
       AND attendance.marked_by = ?`,
     [teacherId, teacherId],
   );

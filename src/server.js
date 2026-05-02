@@ -10,9 +10,9 @@ const server = http.createServer(app);
 async function start() {
   try {
     await assertDbConnection();
-    logger.info("MySQL connection OK");
+    logger.info("Postgres connection OK");
   } catch (err) {
-    logger.error("MySQL connection failed", err);
+    logger.error("Postgres connection failed", err);
     process.exit(1);
   }
 

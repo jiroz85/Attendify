@@ -19,7 +19,10 @@ async function upsertAttendance({
   const [result] = await pool.execute(
     `INSERT INTO attendance (student_id, course_id, class_id, attendance_date, status_code, marked_by)
      VALUES (?, ?, ?, ?, ?, ?)
-     ON DUPLICATE KEY UPDATE status_code = VALUES(status_code), marked_by = VALUES(marked_by), updated_at = CURRENT_TIMESTAMP`,
+     ON CONFLICT (student_id, course_id, class_id, attendance_date) DO UPDATE SET
+       status_code = EXCLUDED.status_code,
+       marked_by = EXCLUDED.marked_by,
+       updated_at = CURRENT_TIMESTAMP`,
     [studentId, courseId, classId, attendanceDate, statusCode, markedBy],
   );
 
@@ -93,7 +96,10 @@ async function bulkUpsertAttendance({
       await connection.execute(
         `INSERT INTO attendance (student_id, course_id, class_id, attendance_date, status_code, marked_by)
          VALUES (?, ?, ?, ?, ?, ?)
-         ON DUPLICATE KEY UPDATE status_code = VALUES(status_code), marked_by = VALUES(marked_by), updated_at = CURRENT_TIMESTAMP`,
+         ON CONFLICT (student_id, course_id, class_id, attendance_date) DO UPDATE SET
+           status_code = EXCLUDED.status_code,
+           marked_by = EXCLUDED.marked_by,
+           updated_at = CURRENT_TIMESTAMP`,
         [
           record.studentId,
           courseId,
@@ -118,10 +124,10 @@ async function getStudentAttendanceStats(studentId) {
   const [rows] = await pool.execute(
     `SELECT 
        COUNT(*) as total_sessions,
-       CAST(SUM(CASE WHEN status_code = 'PRESENT' THEN 1 ELSE 0 END) AS UNSIGNED) as present,
-       CAST(SUM(CASE WHEN status_code = 'ABSENT' THEN 1 ELSE 0 END) AS UNSIGNED) as absent,
-       CAST(SUM(CASE WHEN status_code = 'LATE' THEN 1 ELSE 0 END) AS UNSIGNED) as late,
-       CAST(SUM(CASE WHEN status_code = 'EXCUSED' THEN 1 ELSE 0 END) AS UNSIGNED) as excused
+       SUM(CASE WHEN status_code = 'PRESENT' THEN 1 ELSE 0 END)::INTEGER as present,
+       SUM(CASE WHEN status_code = 'ABSENT' THEN 1 ELSE 0 END)::INTEGER as absent,
+       SUM(CASE WHEN status_code = 'LATE' THEN 1 ELSE 0 END)::INTEGER as late,
+       SUM(CASE WHEN status_code = 'EXCUSED' THEN 1 ELSE 0 END)::INTEGER as excused
      FROM attendance 
      WHERE student_id = ?`,
     [studentId],
@@ -159,10 +165,10 @@ async function getAdminAttendanceStats() {
   const [rows] = await pool.execute(
     `SELECT 
        COUNT(*) as total_sessions,
-       CAST(SUM(CASE WHEN status_code = 'PRESENT' THEN 1 ELSE 0 END) AS UNSIGNED) as present,
-       CAST(SUM(CASE WHEN status_code = 'ABSENT' THEN 1 ELSE 0 END) AS UNSIGNED) as absent,
-       CAST(SUM(CASE WHEN status_code = 'LATE' THEN 1 ELSE 0 END) AS UNSIGNED) as late,
-       CAST(SUM(CASE WHEN status_code = 'EXCUSED' THEN 1 ELSE 0 END) AS UNSIGNED) as excused,
+       SUM(CASE WHEN status_code = 'PRESENT' THEN 1 ELSE 0 END)::INTEGER as present,
+       SUM(CASE WHEN status_code = 'ABSENT' THEN 1 ELSE 0 END)::INTEGER as absent,
+       SUM(CASE WHEN status_code = 'LATE' THEN 1 ELSE 0 END)::INTEGER as late,
+       SUM(CASE WHEN status_code = 'EXCUSED' THEN 1 ELSE 0 END)::INTEGER as excused,
        COUNT(DISTINCT student_id) as total_students,
        COUNT(DISTINCT attendance_date) as total_dates
      FROM attendance`,

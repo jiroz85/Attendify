@@ -1,0 +1,3 @@
+-- Refresh tokens table (Postgres version)
+-- This table is already created in 001_init_attendance.sql
+-- This file is kept for reference but the table creation is moved to the main schema file

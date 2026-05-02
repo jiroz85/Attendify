@@ -92,9 +92,9 @@ async function insertUserTx(
   connection,
   { email, passwordHash, roleCode, firstName, lastName, phone, createdBy },
 ) {
-  const [result] = await connection.execute(
+  const [rows] = await connection.execute(
     `INSERT INTO users (email, password_hash, role_code, status_code, first_name, last_name, phone, created_by, updated_by)
-     VALUES (?, ?, ?, 'ACTIVE', ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, 'ACTIVE', ?, ?, ?, ?, ?) RETURNING id`,
     [
       email,
       passwordHash,
@@ -106,7 +106,8 @@ async function insertUserTx(
       createdBy || null,
     ],
   );
-  return result.insertId;
+  // PostgreSQL with RETURNING clause returns rows with the id
+  return rows && rows[0] ? rows[0].id : null;
 }
 
 async function listClassCourses(classId) {

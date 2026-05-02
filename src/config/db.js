@@ -32,7 +32,7 @@ function toMysqlLikeResult(pgResult) {
 const rawPool = new Pool({
   connectionString: env.db.url,
   max: env.db.connectionLimit,
-  ssl: { rejectUnauthorized: false },
+  ssl: false,
 });
 
 rawPool.on("error", (err) => {
@@ -47,7 +47,8 @@ const pool = {
     // mysql2 returns [rows, fields]. Most of your code uses only [rows] or [result].
     // For non-SELECT statements, mysql2 returns an OkPacket-like object.
     const isSelect = /^\s*select\b/i.test(sql);
-    if (isSelect) {
+    const hasReturning = /returning\b/i.test(sql);
+    if (isSelect || hasReturning) {
       return [result.rows];
     }
     return [toMysqlLikeResult(result)];
@@ -69,7 +70,8 @@ const pool = {
         const normalized = normalizeSqlAndParams(sql, params);
         const result = await client.query(normalized.sql, normalized.params);
         const isSelect = /^\s*select\b/i.test(sql);
-        if (isSelect) {
+        const hasReturning = /returning\b/i.test(sql);
+        if (isSelect || hasReturning) {
           return [result.rows];
         }
         return [toMysqlLikeResult(result)];

@@ -17,7 +17,7 @@ async function findRefreshTokenByJti(jti) {
 
 async function revokeRefreshTokenById(id) {
   await pool.execute(
-    "UPDATE refresh_tokens SET revoked_at = UTC_TIMESTAMP() WHERE id = ? AND revoked_at IS NULL",
+    "UPDATE refresh_tokens SET revoked_at = CURRENT_TIMESTAMP WHERE id = ? AND revoked_at IS NULL",
     [id],
   );
 }
@@ -39,7 +39,7 @@ async function pruneOldRefreshTokensForUser(userId, keepLatestN) {
     const placeholders = idsToRevoke.map(() => "?").join(",");
     await pool.execute(
       `UPDATE refresh_tokens 
-       SET revoked_at = UTC_TIMESTAMP() 
+       SET revoked_at = CURRENT_TIMESTAMP 
        WHERE id IN (${placeholders})`,
       idsToRevoke,
     );
