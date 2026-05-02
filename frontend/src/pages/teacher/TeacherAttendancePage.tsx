@@ -187,11 +187,25 @@ export function TeacherAttendancePage() {
                 Class
               </span>
               <select
-                value={selectedClass ? String(selectedClass.class_id) : ""}
+                value={
+                  selectedClass
+                    ? `${selectedClass.class_id}:${selectedClass.course_id}`
+                    : ""
+                }
                 onChange={(e) => {
-                  const classId = Number(e.target.value);
+                  const raw = e.target.value;
+                  if (!raw) {
+                    setSelectedClass(null);
+                    return;
+                  }
+
+                  const [classIdStr, courseIdStr] = raw.split(":");
+                  const classId = Number(classIdStr);
+                  const courseId = Number(courseIdStr);
                   const selected = classData.find(
-                    (c) => c.class_id === classId,
+                    (c) =>
+                      Number(c.class_id) === classId &&
+                      Number(c.course_id) === courseId,
                   );
                   setSelectedClass(selected || null);
                 }}
@@ -199,7 +213,10 @@ export function TeacherAttendancePage() {
               >
                 <option value="">Select...</option>
                 {classData.map((c) => (
-                  <option key={c.class_id} value={String(c.class_id)}>
+                  <option
+                    key={`${c.class_id}:${c.course_id}`}
+                    value={`${c.class_id}:${c.course_id}`}
+                  >
                     {c.department_name} - {c.course_code} (
                     {c.academic_year_name} - {c.section_name})
                   </option>

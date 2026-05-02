@@ -21,6 +21,15 @@ const app = express();
 
 app.disable("x-powered-by");
 
+app.set("etag", false);
+
+app.use((req, res, next) => {
+  res.set("Cache-Control", "no-store");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
+  next();
+});
+
 app.use(helmet());
 app.use(
   cors(
