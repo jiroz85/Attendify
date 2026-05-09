@@ -127,11 +127,7 @@ export function LoginPage() {
             </button>
 
             <div className="text-xs opacity-80">
-              Backend expects:
-              <div>
-                <code>POST /auth/login</code> with <code>email</code> +{" "}
-                <code>password</code>
-              </div>
+              Sign in using the email and password provided by your institution.
             </div>
           </form>
         </Card>
