@@ -10,6 +10,7 @@ const {
   insertRefreshToken,
   findRefreshTokenByJti,
   revokeRefreshTokenById,
+  revokeAllActiveRefreshTokensForUser,
   pruneOldRefreshTokensForUser,
 } = require("../queries/refreshTokenQueries");
 const {
@@ -55,6 +56,8 @@ async function login({ email, password }) {
   const refreshPayload = verifyRefreshToken(refreshToken);
   const expiresAt = unixSecondsToMySqlDateTime(refreshPayload.exp);
 
+  // Single-device enforcement: revoke any other active sessions for this user.
+  await revokeAllActiveRefreshTokensForUser(user.id);
   await insertRefreshToken({ userId: user.id, jti, tokenHash, expiresAt });
   await pruneOldRefreshTokensForUser(user.id, env.refreshTokens.maxActive);
 
@@ -134,6 +137,14 @@ async function refresh({ refreshToken }) {
     tokenHash: newHash,
     expiresAt,
   });
+  // Single-device enforcement: revoke any other active sessions for this user,
+  // keeping only the token we just issued.
+  const storedNew = await findRefreshTokenByJti(newJti);
+  if (storedNew) {
+    await revokeAllActiveRefreshTokensForUser(payload.sub, storedNew.id);
+  } else {
+    await revokeAllActiveRefreshTokensForUser(payload.sub);
+  }
   await pruneOldRefreshTokensForUser(payload.sub, env.refreshTokens.maxActive);
 
   return { accessToken, refreshToken: newRefreshToken };

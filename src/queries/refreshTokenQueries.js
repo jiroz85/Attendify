@@ -22,6 +22,21 @@ async function revokeRefreshTokenById(id) {
   );
 }
 
+async function revokeAllActiveRefreshTokensForUser(userId, exceptId = null) {
+  if (exceptId != null) {
+    await pool.execute(
+      "UPDATE refresh_tokens SET revoked_at = CURRENT_TIMESTAMP WHERE user_id = ? AND revoked_at IS NULL AND id <> ?",
+      [userId, exceptId],
+    );
+    return;
+  }
+
+  await pool.execute(
+    "UPDATE refresh_tokens SET revoked_at = CURRENT_TIMESTAMP WHERE user_id = ? AND revoked_at IS NULL",
+    [userId],
+  );
+}
+
 async function pruneOldRefreshTokensForUser(userId, keepLatestN) {
   // Keep only latest N active (not revoked) tokens by created_at
   // First get all tokens to potentially revoke
@@ -50,5 +65,6 @@ module.exports = {
   insertRefreshToken,
   findRefreshTokenByJti,
   revokeRefreshTokenById,
+  revokeAllActiveRefreshTokensForUser,
   pruneOldRefreshTokensForUser,
 };
