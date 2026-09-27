@@ -36,7 +36,7 @@ A full-stack attendance management system designed to simplify attendance tracki
 - JWT Authentication
 
 ### Database
-- MySQL
+- PostgreSQL
 
 ## 📁 Project Structure
 
