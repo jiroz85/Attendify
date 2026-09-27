@@ -10,7 +10,7 @@ A full-stack attendance management system designed to simplify attendance tracki
 
 ### Admin Dashboard
 
-![Attendify Admin Dashboard](./attendify-dashboard.png)
+![Attendify Admin Dashboard](./Screenshot%202026-09-27%20204951.png)
 
 ## ✨ Features
 
