@@ -2,6 +2,10 @@
 
 A full-stack attendance management system designed to simplify attendance tracking and academic data management.
 
+## 🌐 Live Demo
+
+[View Attendify](https://attendify-azure.vercel.app/login)
+
 ## ✨ Features
 
 - Student attendance tracking
