@@ -6,6 +6,12 @@ A full-stack attendance management system designed to simplify attendance tracki
 
 [View Attendify](https://attendify-azure.vercel.app/login)
 
+## 📸 Screenshots
+
+### Admin Dashboard
+
+![Attendify Admin Dashboard](./attendify-dashboard.png)
+
 ## ✨ Features
 
 - Student attendance tracking
